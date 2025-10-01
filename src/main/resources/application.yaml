@@ -4,7 +4,6 @@ server:
       timeout: 30m
       cookie:
         name: JSESSIONID
-        secure: true # HTTPS 에서만 전송
         same-site: lax # CSRF 방어
 
 spring:
