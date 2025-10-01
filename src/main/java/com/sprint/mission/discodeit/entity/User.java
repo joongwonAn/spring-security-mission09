@@ -2,13 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +11,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "users")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)  // JPA를 위한 기본 생성자
+@NoArgsConstructor(access = AccessLevel.PROTECTED)  // JPA 를 위한 기본 생성자
 public class User extends BaseUpdatableEntity {
 
     @Column(length = 50, nullable = false, unique = true)
@@ -33,6 +27,7 @@ public class User extends BaseUpdatableEntity {
     @Setter(AccessLevel.PROTECTED)
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus status;
+    @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     private Role role;
 
