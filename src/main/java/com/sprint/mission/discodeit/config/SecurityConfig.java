@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.auth.HttpStatusReturningLogoutSuccessHandler;
 import com.sprint.mission.discodeit.auth.LoginFailureHandler;
 import com.sprint.mission.discodeit.auth.LoginSuccessHandler;
 import com.sprint.mission.discodeit.config.handler.SpaCsrfTokenRequestHandler;
@@ -35,7 +36,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            LoginSuccessHandler loginSuccessHandler,
-                                           LoginFailureHandler loginFailureHandler) throws Exception {
+                                           LoginFailureHandler loginFailureHandler,
+                                           HttpStatusReturningLogoutSuccessHandler logoutSuccessHandler) throws Exception {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // csrf 토큰 저장소를 쿠키로 지정
@@ -45,6 +47,12 @@ public class SecurityConfig {
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler(logoutSuccessHandler)
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
                 )
         ;
         return http.build();
