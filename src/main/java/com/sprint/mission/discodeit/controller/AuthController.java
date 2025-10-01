@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private final UserService userService;
 
     @GetMapping("/csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) { // CsrfToken 파라미터를 메서드 인자로 선언하면, HandlerMethodArgumentResolver를 통해 자동으로 주입됨
@@ -35,5 +40,15 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(userDto);
+    }
+
+    @PutMapping("/role")
+    public ResponseEntity<UserDto> updateUserRole(@RequestBody @Valid UserRoleUpdateRequest userRoleUpdateRequest) {
+        log.debug("Update User Role: {}", userRoleUpdateRequest);
+        UserDto updatedUser = userService.updateUserRole(userRoleUpdateRequest.userId(), userRoleUpdateRequest.newRole());
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(updatedUser);
     }
 }
