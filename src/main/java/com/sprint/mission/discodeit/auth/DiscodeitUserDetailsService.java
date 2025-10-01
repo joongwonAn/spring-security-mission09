@@ -42,7 +42,8 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
                 user.getUsername(),
                 user.getEmail(),
                 userMapper.toDto(user).profile(),
-                isOnline
+                isOnline,
+                user.getRole()
         );
 
         return new DiscodeitUserDetails(userDto, user.getPassword());

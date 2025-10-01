@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
@@ -69,7 +70,7 @@ public class BasicUserService implements UserService {
                 .orElse(null);
         String password = passwordEncoder.encode(userCreateRequest.password()); // passwordEncoder를 사용하여 암호화
 
-        User user = new User(username, email, password, nullableProfile);
+        User user = new User(username, email, password, nullableProfile, Role.USER);
         Instant now = Instant.now();
         UserStatus userStatus = new UserStatus(user, now);
 
