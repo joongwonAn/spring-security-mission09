@@ -33,7 +33,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity(debug = true) // TODO: 운영에서 제외
-@EnableMethodSecurity
+@EnableMethodSecurity // 메서드 호출 시점에 접근 권한 검사
 public class SecurityConfig {
 
     @Bean
@@ -58,10 +58,29 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                 )
                 .authorizeHttpRequests(auth -> auth // URL 별로 접근 권한 설정
+                        .requestMatchers( // 정적 리소스들
+                                "/",
+                                "/index.html",
+                                "/favicon.ico",
+                                "/static/**",
+                                "/assets/**",
+                                "/*.js",
+                                "/*.css",
+                                "/*.png",
+                                "/*.svg",
+                                "/*.jpg",
+                                "/.well-known/**",
+                                "/api/auth/**",
+                                "/h2-console/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/actuator/**"
+                        ).permitAll()
+
                         .requestMatchers("/api/auth/csrf-token").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/logout").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/actuator/**").permitAll()
+
                         .anyRequest().authenticated() // 그 외에 모든 요청 인증
                 )
         ;
