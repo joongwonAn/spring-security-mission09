@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -148,6 +149,7 @@ public class BasicUserService implements UserService {
 
     @Transactional
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto updateUserRole(UUID userId, Role newRole) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.withId(userId));
