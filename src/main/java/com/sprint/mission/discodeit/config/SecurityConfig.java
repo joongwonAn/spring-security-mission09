@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.auth.HttpStatusReturningLogoutSuccessHandler;
-import com.sprint.mission.discodeit.auth.LoginFailureHandler;
-import com.sprint.mission.discodeit.auth.LoginSuccessHandler;
+import com.sprint.mission.discodeit.auth.*;
 import com.sprint.mission.discodeit.config.handler.SpaCsrfTokenRequestHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,15 +30,15 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
  */
 
 @Configuration
-@EnableWebSecurity(debug = true) // TODO: 운영에서 제외
+//@EnableWebSecurity(debug = true) // TODO: 운영에서 제외
 @EnableMethodSecurity // 메서드 호출 시점에 접근 권한 검사
 public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           LoginSuccessHandler loginSuccessHandler,
-                                           LoginFailureHandler loginFailureHandler,
-                                           HttpStatusReturningLogoutSuccessHandler logoutSuccessHandler) throws Exception {
+                                           LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler,
+                                           HttpStatusReturningLogoutSuccessHandler logoutSuccessHandler,
+                                           CustomAccessDeniedHandler customAccessDeniedHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // csrf 토큰 저장소를 쿠키로 지정
@@ -58,30 +56,33 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                 )
                 .authorizeHttpRequests(auth -> auth // URL 별로 접근 권한 설정
-                        .requestMatchers( // 정적 리소스들
-                                "/",
-                                "/index.html",
-                                "/favicon.ico",
-                                "/static/**",
-                                "/assets/**",
-                                "/*.js",
-                                "/*.css",
-                                "/*.png",
-                                "/*.svg",
-                                "/*.jpg",
-                                "/.well-known/**",
-                                "/api/auth/**",
-                                "/h2-console/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/actuator/**"
-                        ).permitAll()
+                                .requestMatchers( // 정적 리소스들
+                                        "/",
+                                        "/index.html",
+                                        "/favicon.ico",
+                                        "/static/**",
+                                        "/assets/**",
+                                        "/*.js",
+                                        "/*.css",
+                                        "/*.png",
+                                        "/*.svg",
+                                        "/*.jpg",
+                                        "/api/auth/**",
+                                        "/h2-console/**",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**",
+                                        "/actuator/**"
+                                ).permitAll()
 
-                        .requestMatchers("/api/auth/csrf-token").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/logout").permitAll()
+                                .requestMatchers("/api/auth/csrf-token").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                                .requestMatchers("/api/auth/login", "/api/auth/logout").permitAll()
 
-                        .anyRequest().authenticated() // 그 외에 모든 요청 인증
+                                .anyRequest().authenticated() // 그 외에 모든 요청 인증
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
         ;
         return http.build();
