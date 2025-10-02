@@ -5,9 +5,12 @@ import com.sprint.mission.discodeit.config.handler.SpaCsrfTokenRequestHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -56,29 +59,29 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                 )
                 .authorizeHttpRequests(auth -> auth // URL 별로 접근 권한 설정
-                                .requestMatchers( // 정적 리소스들
-                                        "/",
-                                        "/index.html",
-                                        "/favicon.ico",
-                                        "/static/**",
-                                        "/assets/**",
-                                        "/*.js",
-                                        "/*.css",
-                                        "/*.png",
-                                        "/*.svg",
-                                        "/*.jpg",
-                                        "/api/auth/**",
-                                        "/h2-console/**",
-                                        "/swagger-ui/**",
-                                        "/v3/api-docs/**",
-                                        "/actuator/**"
-                                ).permitAll()
+                        .requestMatchers( // 정적 리소스들
+                                "/",
+                                "/index.html",
+                                "/favicon.ico",
+                                "/static/**",
+                                "/assets/**",
+                                "/*.js",
+                                "/*.css",
+                                "/*.png",
+                                "/*.svg",
+                                "/*.jpg",
+                                "/api/auth/**",
+                                "/h2-console/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/actuator/**"
+                        ).permitAll()
 
-                                .requestMatchers("/api/auth/csrf-token").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                                .requestMatchers("/api/auth/login", "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/auth/csrf-token").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/logout").permitAll()
 
-                                .anyRequest().authenticated() // 그 외에 모든 요청 인증
+                        .anyRequest().authenticated() // 그 외에 모든 요청 인증
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
@@ -91,5 +94,20 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+        roleHierarchy.setHierarchy("ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER"); // 계층 구조 설정
+        return roleHierarchy;
+    }
+
+    @Bean
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
+            RoleHierarchy roleHierarchy) {
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+        handler.setRoleHierarchy(roleHierarchy);
+        return handler;
     }
 }
