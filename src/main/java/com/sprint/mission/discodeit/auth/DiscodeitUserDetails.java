@@ -26,7 +26,7 @@ public class DiscodeitUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); // TODO: 엔티티에 role 필드 추가 후 변경 예정
+        return List.of((GrantedAuthority) () -> "ROLE_" + userDto.role().name());
     }
 
     @Override
