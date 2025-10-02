@@ -70,4 +70,21 @@ public class DiscodeitUserDetails implements UserDetails {
     public Boolean isOnline() {
         return userDto.online();
     }
+
+    @Override
+    public int hashCode() {
+        return userDto.id().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        DiscodeitUserDetails that = (DiscodeitUserDetails) obj;
+        return userDto.id().equals(that.userDto.id());
+    }
 }

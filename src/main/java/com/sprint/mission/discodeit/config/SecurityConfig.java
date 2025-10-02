@@ -91,6 +91,12 @@ public class SecurityConfig {
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
                 )
+                .sessionManagement(management -> management // 세션 관리 설정
+                        .sessionConcurrency(concurrency -> concurrency // 동시 세션 관리 설정
+                                .maximumSessions(1) // 다중 로그인 방지
+                                .maxSessionsPreventsLogin(true) // 최대 허용수를 초과하면 새로운 로그인 차단
+                        )
+                )
         ;
         return http.build();
     }
