@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.auth.LoginSuccessHandler;
 import com.sprint.mission.discodeit.config.handler.SpaCsrfTokenRequestHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,7 +32,8 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
  */
 
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity(debug = true) // TODO: 운영에서 제외
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -53,6 +56,13 @@ public class SecurityConfig {
                         .logoutSuccessHandler(logoutSuccessHandler)
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
+                )
+                .authorizeHttpRequests(auth -> auth // URL 별로 접근 권한 설정
+                        .requestMatchers("/api/auth/csrf-token").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/logout").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/actuator/**").permitAll()
+                        .anyRequest().authenticated() // 그 외에 모든 요청 인증
                 )
         ;
         return http.build();
