@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.auth;
+package com.sprint.mission.discodeit.auth.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
