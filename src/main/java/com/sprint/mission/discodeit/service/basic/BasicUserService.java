@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
@@ -24,6 +25,8 @@ import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +43,8 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
+
+    private final SessionRegistry sessionRegistry;
 
     @Transactional
     @Override
@@ -153,8 +158,19 @@ public class BasicUserService implements UserService {
     public UserDto updateUserRole(UUID userId, Role newRole) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.withId(userId));
-
+        log.info("user role update: id={}, name={}", user.getId(), user.getUsername());
         user.updateRole(newRole);
+
+        for (Object principal : sessionRegistry.getAllPrincipals()) {
+            if (principal instanceof DiscodeitUserDetails details && details.getUserDto().id().equals(userId)) {
+
+                List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
+                for (SessionInformation sessionInfo : sessions) {
+                    sessionInfo.expireNow();
+                }
+            }
+        }
+
         return userMapper.toDto(user);
     }
 
