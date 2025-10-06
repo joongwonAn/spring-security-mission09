@@ -15,10 +15,13 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 /*
  * POST /api/auth/login
@@ -43,6 +46,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
+                                           SessionRegistry sessionRegistry,
                                            LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler,
                                            HttpStatusReturningLogoutSuccessHandler logoutSuccessHandler,
                                            CustomAccessDeniedHandler customAccessDeniedHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
@@ -74,6 +78,7 @@ public class SecurityConfig {
                                 "/*.png",
                                 "/*.svg",
                                 "/*.jpg",
+                                "/.well-known/**",
                                 "/api/auth/**",
                                 "/h2-console/**",
                                 "/swagger-ui/**",
@@ -95,6 +100,7 @@ public class SecurityConfig {
                         .sessionConcurrency(concurrency -> concurrency // 동시 세션 관리 설정
                                 .maximumSessions(1) // 다중 로그인 방지
                                 .maxSessionsPreventsLogin(true) // 최대 허용수를 초과하면 새로운 로그인 차단
+                                .sessionRegistry(sessionRegistry)
                         )
                 )
         ;
@@ -119,5 +125,15 @@ public class SecurityConfig {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy);
         return handler;
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 }
