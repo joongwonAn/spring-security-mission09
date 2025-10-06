@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /*
  * UserDetails 컴포넌트 대체
@@ -72,19 +73,14 @@ public class DiscodeitUserDetails implements UserDetails {
     }
 
     @Override
-    public int hashCode() {
-        return userDto.id().hashCode();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DiscodeitUserDetails that)) return false;
+        return Objects.equals(this.userDto.id(), that.userDto.id());
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        DiscodeitUserDetails that = (DiscodeitUserDetails) obj;
-        return userDto.id().equals(that.userDto.id());
+    public int hashCode() {
+        return Objects.hash(userDto.id());
     }
 }
