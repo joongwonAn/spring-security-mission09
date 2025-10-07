@@ -122,6 +122,7 @@ public class BasicUserService implements UserService {
 
     @Transactional
     @Override
+    @PreAuthorize("#userId == authentication.principal.id")
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
                           Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
@@ -188,6 +189,7 @@ public class BasicUserService implements UserService {
 
     @Transactional
     @Override
+    @PreAuthorize("#userId == authentication.principal.id")
     public void delete(UUID userId) {
         log.debug("사용자 삭제 시작: id={}", userId);
 
