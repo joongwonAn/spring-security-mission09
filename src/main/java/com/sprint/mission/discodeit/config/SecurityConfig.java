@@ -20,8 +20,12 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+
+import javax.sql.DataSource;
 
 /*
  * POST /api/auth/login
@@ -45,11 +49,12 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,
+    public SecurityFilterChain filterChain(HttpSecurity http, DataSource dataSource,
                                            SessionRegistry sessionRegistry,
                                            LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler,
                                            HttpStatusReturningLogoutSuccessHandler logoutSuccessHandler,
-                                           CustomAccessDeniedHandler customAccessDeniedHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
+                                           CustomAccessDeniedHandler customAccessDeniedHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+                                           DiscodeitUserDetailsService discodeitUserDetailsService) throws Exception {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // csrf 토큰 저장소를 쿠키로 지정
@@ -59,6 +64,13 @@ public class SecurityConfig {
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
+                )
+                .rememberMe(remember -> remember
+                        .key("my-remember-key")
+                        .tokenRepository(persistentTokenRepository(dataSource))
+                        .tokenValiditySeconds(7 * 24 * 60 * 60)
+                        .rememberMeParameter("remember-me")
+                        .userDetailsService(discodeitUserDetailsService)
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
@@ -99,7 +111,7 @@ public class SecurityConfig {
                 .sessionManagement(management -> management // 세션 관리 설정
                         .sessionConcurrency(concurrency -> concurrency // 동시 세션 관리 설정
                                 .maximumSessions(1) // 다중 로그인 방지
-                                .maxSessionsPreventsLogin(true) // 최대 허용수를 초과하면 새로운 로그인 차단
+                                .maxSessionsPreventsLogin(false)
                                 .sessionRegistry(sessionRegistry)
                         )
                 )
@@ -135,5 +147,12 @@ public class SecurityConfig {
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
+    }
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
+        JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
+        repo.setDataSource(dataSource);
+        return repo;
     }
 }

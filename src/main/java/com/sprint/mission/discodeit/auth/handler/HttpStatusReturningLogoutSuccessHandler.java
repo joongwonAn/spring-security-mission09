@@ -17,7 +17,12 @@ public class HttpStatusReturningLogoutSuccessHandler implements LogoutSuccessHan
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-        log.debug("Logout successful for user: {}", authentication.getName());
+        if (authentication != null) {
+            log.info("로그아웃 성공: {}", authentication.getName());
+        } else {
+            log.info("이미 로그아웃된 사용자입니다.");
+        }
+
         response.setStatus(HttpServletResponse.SC_NO_CONTENT); // 204 Void 반환
     }
 }
